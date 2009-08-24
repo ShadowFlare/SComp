@@ -1,0 +1,4 @@
+Get the bzip2 source code from the bzip2 site at
+http://www.bzip.org/
+
+Extract the source code to the location of this file.

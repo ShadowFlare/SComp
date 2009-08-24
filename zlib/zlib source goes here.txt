@@ -1,0 +1,4 @@
+Get the zlib source code from the zlib site at
+http://www.zlib.net/
+
+Extract the source code to the location of this file.

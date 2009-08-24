@@ -15,19 +15,33 @@
 // Comment this out to disable Zlib compression support.
 #define USE_ZLIB
 
+// Comment this out to disable bzip 2 compression support.
+#define USE_BZIP2
+
 #include "SComp.h"
 #include "SErr.h"
 #include "SMem.h"
 #include "wave.h"
 #include "huffman.h"
+
 #ifdef USE_ZLIB
 #ifndef __SYS_ZLIB
-#include "zlib.h"
+#define ZLIB_INTERNAL
+#include "zlib/zlib.h"
 #else
 #include <zlib.h>
 #endif
 #endif
+
 #include "pklib.h"
+
+#ifdef USE_BZIP2
+#ifndef __SYS_BZLIB
+#include "bzip2/bzlib.h"
+#else
+#include <bzlib.h>
+#endif
+#endif
 
 typedef void (__fastcall *FCOMPRESS)(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
 typedef void (__fastcall *FDECOMPRESS)(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
@@ -49,6 +63,9 @@ void __fastcall HuffmanCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressed
 void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
 #endif
 void __fastcall Implode(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+#ifdef USE_BZIP2
+void __fastcall CompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+#endif
 
 void __fastcall DecompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
 void __fastcall DecompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
@@ -57,6 +74,9 @@ void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompre
 void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
 #endif
 void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
+#ifdef USE_BZIP2
+void __fastcall DecompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
+#endif
 
 void __fastcall InitWaveCompress(DWORD dwCompressLevel, LPDWORD *lplpdwCompressionSubType, LPDWORD lpdwCompressionSubType);
 
@@ -80,7 +100,10 @@ CompressFunc CompressionFunctions[] =
 #ifdef USE_ZLIB
 	{0x02, Deflate},
 #endif
-	{0x08, Implode}
+	{0x08, Implode},
+#ifdef USE_BZIP2
+	{0x10, CompressBZ2},
+#endif
 };
 
 DecompressFunc DecompressionFunctions[] =
@@ -91,7 +114,10 @@ DecompressFunc DecompressionFunctions[] =
 #ifdef USE_ZLIB
 	{0x02, Inflate},
 #endif
-	{0x08, Explode}
+	{0x08, Explode},
+#ifdef USE_BZIP2
+	{0x10, DecompressBZ2},
+#endif
 };
 
 const DWORD nCompFunctions = sizeof(CompressionFunctions) / sizeof(CompressionFunctions[0]);
@@ -496,6 +522,23 @@ void __fastcall Implode(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LP
 	SMemFree(lpvWorkBuffer);
 }
 
+#ifdef USE_BZIP2
+
+void __fastcall CompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
+{
+	int nBlockSize;
+
+	nBlockSize = 9;
+	if (lpdwCompressionSubType)
+		if (*lpdwCompressionSubType >= 1 && *lpdwCompressionSubType <= 9)
+			nBlockSize = *lpdwCompressionSubType;
+
+	BZ2_bzBuffToBuffCompress((char *)lpvDestinationMem, (unsigned int *)lpdwCompressedSize, (char *)lpvSourceMem, (unsigned int)dwDecompressedSize, nBlockSize, 0, 0);
+	*lpdwCompressionSubType = 0;
+}
+
+#endif
+
 void __fastcall DecompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
 {
 	*lpdwDecompressedSize = DecompressWave((LPBYTE)lpvDestinationMem,*lpdwDecompressedSize,(LPBYTE)lpvSourceMem,dwCompressedSize,1);
@@ -605,6 +648,15 @@ void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, 
 	SMemFree(lpvWorkBuffer);
 }
 
+#ifdef USE_BZIP2
+
+void __fastcall DecompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
+{
+	BZ2_bzBuffToBuffDecompress((char *)lpvDestinationMem, (unsigned int *)lpdwDecompressedSize, (char *)lpvSourceMem, (unsigned int)dwCompressedSize, 0, 0);
+}
+
+#endif
+
 unsigned int FillInput(char *lpvBuffer, unsigned int *lpdwSize, void *param)
 {
 	DWORD dwBufferSize;
@@ -636,3 +688,18 @@ void FillOutput(char *lpvBuffer, unsigned int *lpdwSize, void *param)
 	lpBufferInfo->dwDestStart += dwBufferSize;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef USE_BZIP2
+
+void bz_internal_error ( int errcode )
+{
+}
+
+#endif
+
+#ifdef __cplusplus
+};  // extern "C"
+#endif
