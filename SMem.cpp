@@ -7,7 +7,7 @@
 
 
 #include "SMem.h"
-#include <malloc.h>
+#include <stdlib.h>
 
 LPVOID WINAPI SMemAlloc(DWORD dwSize)
 {
