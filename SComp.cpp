@@ -92,6 +92,25 @@ typedef struct {
 unsigned int FillInput(char *lpvBuffer, unsigned int *lpdwSize, void *param);
 void FillOutput(char *lpvBuffer, unsigned int *lpdwSize, void *param);
 
+const unsigned int UNSUPPORTED_COMPRESSION   = (0xFF ^ (0x40 | 0x80 | 0x01
+#ifdef USE_ZLIB
+	| 0x02
+#endif
+	| 0x08
+#ifdef USE_BZIP2
+	| 0x10
+#endif
+	));
+const unsigned int UNSUPPORTED_DECOMPRESSION = (0xFF ^ (0x40 | 0x80 | 0x01
+#ifdef USE_ZLIB
+	| 0x02
+#endif
+	| 0x08
+#ifdef USE_BZIP2
+	| 0x10
+#endif
+	));
+
 CompressFunc CompressionFunctions[] =
 {
 	{0x40, CompressWaveMono},

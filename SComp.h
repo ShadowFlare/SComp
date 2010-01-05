@@ -14,6 +14,9 @@
 extern "C" {
 #endif
 
+extern const unsigned int UNSUPPORTED_COMPRESSION;
+extern const unsigned int UNSUPPORTED_DECOMPRESSION;
+
 BOOL WINAPI SCompCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, DWORD dwCompressionType, DWORD dwCompressionSubType, DWORD dwCompressLevel);
 BOOL WINAPI SCompDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
 
