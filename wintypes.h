@@ -5,24 +5,27 @@
 #ifndef WIN_TYPES_INCLUDED
 #define WIN_TYPES_INCLUDED
 
+#include <stdint.h>
+
 #define WINAPI
 #define CDECL
 #define __fastcall
 
 #define CONST const
+#define VOID void
 
-typedef void VOID;
+//typedef void VOID;
 typedef void *LPVOID;
 typedef CONST void *LPCVOID;
 typedef const char *LPCSTR;
-typedef unsigned char BYTE;
+typedef uint8_t BYTE;
 typedef BYTE *LPBYTE;
-typedef unsigned short WORD;
+typedef uint16_t WORD;
 typedef WORD *LPWORD;
-typedef short SHORT;
-typedef unsigned long DWORD;
+typedef int16_t SHORT;
+typedef uint32_t DWORD;
 typedef DWORD *LPDWORD;
-typedef long LONG;
+typedef int32_t LONG;
 typedef LONG *LPLONG;
 
 typedef int BOOL;
