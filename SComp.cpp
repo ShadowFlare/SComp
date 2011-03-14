@@ -496,7 +496,7 @@ void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LP
 		}
 	}
 
-	compress2((LPBYTE)lpvDestinationMem,lpdwCompressedSize,(LPBYTE)lpvSourceMem,dwDecompressedSize,dwCompressLevel);
+	compress2((LPBYTE)lpvDestinationMem,(unsigned long *)lpdwCompressedSize,(LPBYTE)lpvSourceMem,dwDecompressedSize,dwCompressLevel);
 	*lpdwCompressionSubType = 0;
 }
 
@@ -637,7 +637,7 @@ void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompre
 
 void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
 {
-	uncompress((LPBYTE)lpvDestinationMem,lpdwDecompressedSize,(LPBYTE)lpvSourceMem,dwCompressedSize);
+	uncompress((LPBYTE)lpvDestinationMem,(unsigned long *)lpdwDecompressedSize,(LPBYTE)lpvSourceMem,dwCompressedSize);
 }
 
 #endif
