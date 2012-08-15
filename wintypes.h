@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#ifndef WINAPI
 #define WINAPI
+#endif
 #define CDECL
 #define __fastcall
 
